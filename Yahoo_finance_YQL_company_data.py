@@ -175,7 +175,7 @@ class YComDataExtr(YFinanceDataExtr):
             Formed the url, download the csv, put in the header. Have a dataframe object.
         """
         self.form_url_str()
-        if self.__print_url: print self.com_data_full_url
+        if self.__print_url: print(self.com_data_full_url)
         self.download_json()
         self.get_datalist_fr_json()
 
@@ -188,7 +188,7 @@ class YComDataExtr(YFinanceDataExtr):
         
         self.temp_full_data_df = None
         for n in chunk_of_list:
-            # print the progress
+            # print(the progress)
             sys.stdout.write('.')
 
             # set the small chunk of list
@@ -199,7 +199,7 @@ class YComDataExtr(YFinanceDataExtr):
         self.datatype_com_data_allstock_df = pandas.DataFrame(self.datatype_com_data_allstock_list)
         self.datatype_com_data_allstock_df.rename(columns ={'symbol':'SYMBOL'}, inplace=True)
         
-        print 'Done\n'
+        print('Done\n')
 
     def download_json(self):
         """ Download the json file from the self.com_data_full_url.
@@ -237,7 +237,7 @@ class YComDataExtr(YFinanceDataExtr):
                     try:
                         temp_dict_data[parameters] = indivdual_set[parameters]#for symbol
                     except:
-                        print 'not working', parameters
+                        print('not working', parameters)
                 elif type(indivdual_set[parameters]) == dict:
                     if indivdual_set[parameters].has_key('content'):
                         temp_dict_data[parameters] = indivdual_set[parameters]['content']
@@ -264,7 +264,7 @@ class YComDataExtr(YFinanceDataExtr):
         self.com_data_allstock_df = pandas.DataFrame()
         
         for datatype in self.datatype_url_dict.keys():
-            print "Processing datatype: ", datatype
+            print("Processing datatype: ", datatype)
             ## reset all temp storage
             self.datatype_com_data_allstock_list =[]
             self.datatype_com_data_allstock_df = object()
@@ -282,7 +282,7 @@ class YComDataExtr(YFinanceDataExtr):
         try:
             self.rm_percent_symbol_fr_cols()
         except:
-            print 'some columns are missing for stripping percentage'
+            print('some columns are missing for stripping percentage')
                 
     def rm_percent_symbol_fr_cols(self):
         """ Remove the % symbol from those columns that have this symbol.
@@ -317,7 +317,7 @@ class YComDataExtr(YFinanceDataExtr):
         
         self.temp_full_data_df = None
         for n in chunk_of_list:
-            # print the progress
+            # print(the progress)
             sys.stdout.write('.')
 
             # set the small chunk of list
@@ -331,7 +331,7 @@ class YComDataExtr(YFinanceDataExtr):
         # Add in year
         self.datatype_com_data_allstock_df['Year'] = self.datatype_com_data_allstock_df['Date'].map(lambda x: x[:4])
         
-        print 'Done\n'
+        print('Done\n')
 
     def set_hist_data_num_day_fr_current(self, num_days):
         """ Set the num of days from current date to get the historical price data.
@@ -375,7 +375,7 @@ class YComDataExtr(YFinanceDataExtr):
 
 if __name__ == '__main__':
     
-    print "start processing"
+    print("start processing")
     
     choice = 3       
 
@@ -426,7 +426,7 @@ if __name__ == '__main__':
 ##        w.full_stocklist_to_retrieve  = chunk_of_list[0][:3]
         w.retrieve_all_results()
          
-        print w.com_data_allstock_df
+        print(w.com_data_allstock_df)
         ##
         ##full_stock_data_df = pandas.merge(full_stock_data_df, w.com_data_allstock_df, on= 'SYMBOL')
 
@@ -448,7 +448,7 @@ if __name__ == '__main__':
         w = YComDataExtr()
         w.set_full_stocklist_to_retrieve(list(full_stock_data_df['SYMBOL'])[:10])
         w.get_all_hist_data()
-        print w.datatype_com_data_allstock_df.head()
+        print(w.datatype_com_data_allstock_df.head())
 
         # should add the year column
 

@@ -78,7 +78,7 @@ if __name__ == '__main__':
     db_full_path = r'C:\data\stock_sql_db\stock_hist.db'
 
     for n in range(2): print
-    print time.ctime()
+    print(time.ctime())
 
 
     choice  = 1
@@ -90,12 +90,12 @@ if __name__ == '__main__':
     if choice == 1:
 
         ## parameters
-        final_store_filename = get_filename(r'c:\data\compile_stockdata', 'full_')  
+        final_store_filename = get_filename(r'C:\Users\JSYADAV\PycharmProjects\yahoo_finance_data_extract\data\compile_stockdata', 'full_')
         full_stock_data_df = object()
 
         if 'a2' in partial_run:
-            print "Getting Data from the SGX instead of YUI."
-            print "-------------------------------------"
+            print("Getting Data from the SGX instead of YUI.")
+            print("-------------------------------------")
             data_ext = SGXDataExtract()
             data_ext.process_all_data()
             temp_full_data_df = data_ext.sgx_curr_plus_company_df
@@ -103,14 +103,14 @@ if __name__ == '__main__':
             
             ## save to temp file for enable filtering
             temp_full_data_df.to_csv(r'c:\data\temp\temp_stockdata.csv')
-            print "Getting Main dataset from YUI -- Done"
-            print 
+            print("Getting Main dataset from YUI -- Done")
+            print()
 
 
         ## Initial stage, getting most raw data.
         if 'a' in partial_run:
-            print "Getting Main dataset from YUI."
-            print "-------------------------------------"
+            print("Getting Main dataset from YUI.")
+            print("-------------------------------------")
             data_ext = YFinanceDataExtr()
             data_ext.set_stock_sym_append_str('')
             
@@ -121,31 +121,31 @@ if __name__ == '__main__':
             ##comment below if running the full list.
             #data_ext.set_full_stocklist_to_retrieve(['S58.SI','S68.SI'])
             data_ext.get_cur_quotes_fr_list()
-            #print data_ext.temp_full_data_df
+            #print(data_ext.temp_full_data_df)
 
             ## save to temp file for enable filtering
             data_ext.temp_full_data_df.to_csv(r'c:\data\temp\temp_stockdata.csv')
-            print "Getting Main dataset from YUI -- Done"
-            print 
+            print("Getting Main dataset from YUI -- Done")
+            print()
 
         ## basic filtering to remove those irrelvant stocks.
         ## the criteria set is very loose based on below.
         if 'b' in partial_run:
-            print "Basic Filtering of stock data."
+            print("Basic Filtering of stock data.")
             ss =  InfoBasicFilter(r'c:\data\temp\temp_stockdata.csv')
             ss.set_criteria_type('basic')
             ss.get_all_criteria_fr_file()
             ss.process_criteria()
-            print "stocks left after basic filtering: ", len(ss.modified_df)
+            print("stocks left after basic filtering: ", len(ss.modified_df))
             ss.modified_df.to_csv(final_store_filename, index = False)
-            print "Basic Filtering of stock data -- Done. \n"
+            print("Basic Filtering of stock data -- Done. \n")
 
         if 'c_backup' in partial_run:
             ## testing, to remove after this
             #ss.modified_df = ss.modified_df.head()
 
             ## 3 days trends data
-            print "Getting Trends data"
+            print("Getting Trends data")
             trend_ext = YFHistDataExtr()
             trend_ext.set_interval_to_retrieve(365*5)
             trend_ext.enable_save_raw_file = 0
@@ -153,16 +153,16 @@ if __name__ == '__main__':
             trend_ext.run_all_hist_data()
             full_stock_data_df = pandas.merge(ss.modified_df, trend_ext.all_stock_combined_post_data_df, on = 'SYMBOL', how ='left')
             
-            print "Getting Trends data -- Done. \n"
+            print("Getting Trends data -- Done. \n")
             #full_stock_data_df.to_csv(r'c:\data\full_oct21.csv', index = False)
 
         if 'c_pre' in partial_run:
             """ Update the database """
-            print 'Updating the database with latest hist price.'
+            print('Updating the database with latest hist price.')
             datastore = FinanceDataStore(db_full_path)
             stock_list = list(ss.modified_df['SYMBOL'])
             datastore.scan_and_input_recent_prices(stock_list,5)
-            print 'Updating the database with latest hist price -- Done\n'
+            print('Updating the database with latest hist price -- Done\n')
 
         if 'c' in partial_run:
             ## using database to retrieve the data
@@ -170,28 +170,27 @@ if __name__ == '__main__':
             datastore.retrieve_hist_data_fr_db()
 
             ## 3 days trends data
-            print "Getting Trends data"
+            print("Getting Trends data")
             trend_ext = YFHistDataExtr()
             trend_ext.set_bypass_data_download()
             trend_ext.set_raw_dataset(datastore.hist_price_df, datastore.hist_div_df)
             trend_ext.run_all_hist_data()
             full_stock_data_df = pandas.merge(ss.modified_df, trend_ext.all_stock_combined_post_data_df, on = 'SYMBOL', how ='left')
             
-            print "Getting Trends data -- Done. \n"
+            print("Getting Trends data -- Done. \n")
             full_stock_data_df.to_csv(final_store_filename, index = False)
 
         if 'd_pre' in partial_run:
             """ Skip the company data info and just join based on store data."""
-            print 'Use backup data for company data.'
+            print('Use backup data for company data.')
             store_com_path = r'C:\data\stock_sql_db\company_data.csv'
             com_data_df = pandas.read_csv(store_com_path)
             full_stock_data_df = pandas.merge(full_stock_data_df, com_data_df, on = 'SYMBOL', how ='left')
 
         if 'd' in partial_run:
             ## Replaced with the com data scraping using YQL --> some problem for this
-            print "Getting company data from YF using YQL"
-            print
-            print 'len of stock dataframe', len(full_stock_data_df)
+            print("Getting company data from YF using YQL")
+            print('len of stock dataframe', len(full_stock_data_df))
             dd = YComDataExtr()
             dd.set_stock_sym_append_str('')
             dd.set_full_stocklist_to_retrieve(list(full_stock_data_df['SYMBOL']))
@@ -206,7 +205,7 @@ if __name__ == '__main__':
 
         if 'e' in partial_run:
             ## tech analysis
-            print 'Tech analysis '
+            print('Tech analysis ')
             sym_list = list(full_stock_data_df['SYMBOL'])
             w = TechAnalysisAdd(sym_list)
             w.enable_pull_fr_database()
@@ -240,21 +239,21 @@ if __name__ == '__main__':
 
             ## store all the data
             full_stock_data_df.to_csv(final_store_filename, index = False)
-            print "Getting additional data from YF -- Done"
+            print("Getting additional data from YF -- Done")
 
         if 'g' in partial_run:
             """Further filtering"""
-            print "Final filtering of data according to criteria"
+            print("Final filtering of data according to criteria")
             print
             ## further filtering.
             BasicFilter =  InfoBasicFilter(final_store_filename)
             BasicFilter.loop_criteria()
-            print "Final filtering of data according to criteria -- Done."
+            print("Final filtering of data according to criteria -- Done.")
 
     if  choice ==2:
         """do filtering and ranking on the filtering --> rank by priority"""
 
-    print time.ctime()
+    print(time.ctime())
     raw_input()
 
 

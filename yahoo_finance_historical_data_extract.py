@@ -63,8 +63,9 @@
 
 import os, re, sys, time, datetime, copy, shutil
 import pandas
-from scipy.stats import linregress
-from pattern.web import URL, extension
+#from scipy.stats import linregress
+#from pattern.web import URL, extension
+from urllib import request
 
  
 class YFHistDataExtr(object):
@@ -85,9 +86,11 @@ class YFHistDataExtr(object):
 ##
 ##        # Database parametes
 ##        self.hist_database_path = r'C:\data\stock_sql_db\stock_hist.db'
-                                                
-        # URL forming 
+
+
+        # URL forming
         self.hist_quotes_start_url = "http://ichart.yahoo.com/table.csv?s="
+        #self.hist_quotes_start_url = "http://download.finance.yahoo.com/d/quotes.csv?s="
         self.hist_quotes_stock_portion_url = ''
         self.hist_quotes_date_interval_portion_url = ''
         self.hist_quotes_date_dividend_portion_url = '' # dividend part (combined with the interval portion)
@@ -98,8 +101,8 @@ class YFHistDataExtr(object):
         # Output storage
         self.hist_quotes_df = object()
         self.enable_save_raw_file = 1 # 1 - will save all the indivdual raw data
-        self.hist_quotes_csvfile_path = r'c:\data\raw_stock_data' # for storing of all stock raw data
-        self.tempfile_sav_location = r'c:\data\temp\temp_hist_div_data_save.csv'
+        self.hist_quotes_csvfile_path = r'C:\Users\JSYADAV\PycharmProjects\yahoo_finance_data_extract\data\raw_stock_data' # for storing of all stock raw data
+        self.tempfile_sav_location = r'C:\Users\JSYADAV\PycharmProjects\yahoo_finance_data_extract\data\temp\temp_hist_div_data_save.csv'
         self.all_stock_df = []# to trick it as len 0 item
         self.all_stock_div_hist_df = []
         self.all_stock_consolidated_div_df = []
@@ -222,15 +225,20 @@ class YFHistDataExtr(object):
             target_url = self.div_history_full_url
             sav_filename = os.path.join(self.hist_quotes_csvfile_path,'div_hist_'+ self.individual_stock_sym+ '.csv')
         else:
-            print 'wrong download type'
+            print('wrong download type')
             raise
 
-        url = URL(target_url)
+
+        print(target_url)
+        #url = URL(target_url)
+        url = request.urlopen(target_url)
         f = open(self.tempfile_sav_location, 'wb') # save as test.gif
         try:
-            f.write(url.download())#if have problem skip
+            #f.write(url.download())#if have problem skip
+            with url as d:
+                f.write(d.read())
         except:
-            if self.__print_download_fault: print 'Problem with processing this data: ', target_url
+            if self.__print_download_fault: print ('Problem with processing this data: ', target_url)
             self.download_fault =1
         f.close()
 
@@ -273,13 +281,13 @@ class YFHistDataExtr(object):
             Formed the url, download the csv, put in the header. Have a dataframe object.
             Will get both the hist price and the div data
         """
-        print "Getting historical data plus dividend data for each stock."
-        print "Will run twice: one for historical data, the other for dividend"
+        print("Getting historical data plus dividend data for each stock.")
+        print("Will run twice: one for historical data, the other for dividend")
         for stock in self.all_stock_sym_list:
-            if self.print_current_processed_stock: print 'Processing stock: ', stock
+            if self.print_current_processed_stock: print ('Processing stock: ', stock)
             self.set_stock_to_retrieve(stock)
             self.form_url_str()
-            if self.print_current_processed_stock: print self.hist_quotes_full_url
+            if self.print_current_processed_stock: print (self.hist_quotes_full_url)
             
             ## get the hist data
             self.downloading_csv(download_type = 'hist')
@@ -292,7 +300,7 @@ class YFHistDataExtr(object):
                 sys.stdout.write('.')
             else:
                 sys.stdout.write('E:%s'%stock)
-        print 'Done\n'
+        print ('Done\n')
 
     ## methods for postprocessing data set -- hist data
     def removed_zero_vol_fr_dataset(self):
@@ -450,19 +458,19 @@ class YFHistDataExtr(object):
 
 if __name__ == '__main__':
     
-    print "start processing"
+    print ("start processing")
     
-    choice = 6
+    choice = 1
 
     if choice == 1:
         data_ext = YFHistDataExtr()
-        data_ext.set_interval_to_retrieve(365*5)
+        data_ext.set_interval_to_retrieve(5) # 5 days
         data_ext.set_multiple_stock_list(['OV8.SI','S58.SI'])
         data_ext.set_stock_to_retrieve('OV8.SI')
         data_ext.get_trend_data()
         
-        print data_ext.processed_data_df        
-        print data_ext.price_trend_data_by_stock
+        print(data_ext.processed_data_df)
+        print(data_ext.price_trend_data_by_stock)
 
     if choice == 2:
         w = data_ext.processed_data_df
@@ -487,7 +495,7 @@ if __name__ == '__main__':
         target_div_hist_df = div_df[~(div_df['Div_year']== curr_yr)]
         
         div_cnt_df =  target_div_hist_df.groupby(['SYMBOL', 'Div_year']).agg("count").reset_index()
-        print div_cnt_df.groupby('SYMBOL').agg('mean')
+        print (div_cnt_df.groupby('SYMBOL').agg('mean'))
 
     if choice ==5:
         data_ext = YFHistDataExtr()
@@ -495,7 +503,7 @@ if __name__ == '__main__':
         data_ext.set_multiple_stock_list(['OV8.SI','BN4.SI'])
         data_ext.run_all_hist_data()
         #print data_ext.all_stock_consolidated_div_df
-        print data_ext.all_stock_combined_post_data_df
+        print(data_ext.all_stock_combined_post_data_df)
 
     if choice == 6:
         """ Try disable downloading data."""
@@ -506,7 +514,7 @@ if __name__ == '__main__':
         data_ext.set_raw_dataset(f.hist_price_df, f.hist_div_df)
         data_ext.run_all_hist_data()
         #print data_ext.all_stock_consolidated_div_df
-        print data_ext.all_stock_combined_post_data_df
+        print(data_ext.all_stock_combined_post_data_df)
 
 
 
